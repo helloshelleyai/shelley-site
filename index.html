@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shelley — AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --white: #f5f3ef;
+      --off-white: rgba(245, 243, 239, 0.85);
+      --btn-bg: rgba(245, 243, 239, 0.95);
+      --btn-hover: #ffffff;
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      background: #000;
+      overflow: hidden;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    /* ── Starfield canvas ── */
+    canvas#stars {
+      position: fixed;
+      inset: 0;
+      width: 100%; height: 100%;
+      z-index: 0;
+    }
+
+    /* ── Grain overlay ── */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+      background-size: 180px 180px;
+      opacity: 0.08;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* ── Layout ── */
+    .layout {
+      position: relative;
+      z-index: 2;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Nav ── */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 22px 28px;
+    }
+
+    .nav-logo {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      font-size: 13px;
+      letter-spacing: 0.01em;
+      color: var(--white);
+      opacity: 0;
+      animation: fadeUp 0.8s ease forwards 0.2s;
+    }
+
+    .nav-logo span {
+      opacity: 0.55;
+      font-size: 11px;
+      margin-left: 2px;
+    }
+
+    .btn-contact {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 400;
+      color: #111;
+      background: var(--btn-bg);
+      border: none;
+      border-radius: 999px;
+      padding: 8px 20px;
+      cursor: pointer;
+      letter-spacing: 0.01em;
+      transition: background 0.2s ease, transform 0.15s ease;
+      opacity: 0;
+      animation: fadeUp 0.8s ease forwards 0.3s;
+    }
+
+    .btn-contact:hover {
+      background: var(--btn-hover);
+      transform: scale(1.03);
+    }
+
+    /* ── Hero ── */
+    .hero {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      text-align: center;
+    }
+
+    .hero-title {
+      font-family: 'Instrument Serif', serif;
+      font-weight: 400;
+      font-size: clamp(48px, 7vw, 88px);
+      color: var(--white);
+      letter-spacing: -0.02em;
+      line-height: 1;
+      opacity: 0;
+      animation: fadeUp 1s ease forwards 0.5s;
+    }
+
+    .hero-title .dash {
+      font-style: italic;
+      letter-spacing: -0.04em;
+    }
+
+    .hero-subtitle {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      font-size: clamp(13px, 1.5vw, 16px);
+      color: var(--off-white);
+      letter-spacing: 0.02em;
+      opacity: 0;
+      animation: fadeUp 1s ease forwards 0.7s;
+    }
+
+    .btn-cta {
+      margin-top: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 400;
+      color: #111;
+      background: var(--btn-bg);
+      border: none;
+      border-radius: 999px;
+      padding: 13px 36px;
+      cursor: pointer;
+      letter-spacing: 0.01em;
+      transition: background 0.2s ease, transform 0.15s ease;
+      opacity: 0;
+      animation: fadeUp 1s ease forwards 0.9s;
+    }
+
+    .btn-cta:hover {
+      background: var(--btn-hover);
+      transform: scale(1.03);
+    }
+
+    /* ── Footer ── */
+    footer {
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      opacity: 0;
+      animation: fadeUp 0.8s ease forwards 1.1s;
+    }
+
+    footer a {
+      color: var(--white);
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+
+    footer a:hover { opacity: 1; }
+
+    footer svg {
+      width: 20px; height: 20px;
+      fill: currentColor;
+    }
+
+    /* ── Animations ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="stars"></canvas>
+
+  <div class="layout">
+    <nav>
+      <div class="nav-logo">Shelley <span>— AI</span></div>
+      <button class="btn-contact" onclick="window.location.href='mailto:hello@shelley.ai'">Contact</button>
+    </nav>
+
+    <section class="hero">
+      <h1 class="hero-title">Shelley <span class="dash">—</span>AI</h1>
+      <p class="hero-subtitle">building— in conversation.</p>
+      <button class="btn-cta" onclick="window.location.href='#'">Request early access</button>
+    </section>
+
+    <footer>
+      <a href="https://linkedin.com" target="_blank" rel="noopener" aria-label="LinkedIn">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+        </svg>
+      </a>
+    </footer>
+  </div>
+
+  <script>
+    // ── Procedural starfield (matches grainy galaxy aesthetic) ──
+    const canvas = document.getElementById('stars');
+    const ctx = canvas.getContext('2d');
+
+    function resize() {
+      canvas.width  = window.innerWidth;
+      canvas.height = window.innerHeight;
+      draw();
+    }
+
+    function rand(min, max) { return Math.random() * (max - min) + min; }
+
+    function draw() {
+      const W = canvas.width, H = canvas.height;
+      ctx.clearRect(0, 0, W, H);
+
+      // Deep space gradient (matches the bright globe in the original)
+      const cx = W * 0.5, cy = H * 0.45;
+      const r  = Math.min(W, H) * 0.52;
+
+      const grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+      grd.addColorStop(0,    'rgba(110,105,98,0.55)');
+      grd.addColorStop(0.35, 'rgba(60,58,55,0.35)');
+      grd.addColorStop(0.7,  'rgba(20,18,16,0.25)');
+      grd.addColorStop(1,    'rgba(0,0,0,0)');
+
+      ctx.fillStyle = '#0a0907';
+      ctx.fillRect(0, 0, W, H);
+
+      ctx.fillStyle = grd;
+      ctx.fillRect(0, 0, W, H);
+
+      // Stars — three tiers
+      for (let i = 0; i < 1800; i++) {
+        const x = rand(0, W), y = rand(0, H);
+        const size = rand(0.2, 1.4);
+        const brightness = rand(0.3, 1);
+        ctx.beginPath();
+        ctx.arc(x, y, size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255,252,245,${brightness * 0.7})`;
+        ctx.fill();
+      }
+
+      // Streaks (shooting star trails in original)
+      for (let i = 0; i < 55; i++) {
+        const x = rand(0, W), y = rand(0, H);
+        const len = rand(6, 55);
+        const angle = rand(-0.6, 0.1);
+        const opacity = rand(0.08, 0.45);
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(angle);
+        const lg = ctx.createLinearGradient(0, 0, len, 0);
+        lg.addColorStop(0, `rgba(255,252,245,0)`);
+        lg.addColorStop(0.5, `rgba(255,252,245,${opacity})`);
+        lg.addColorStop(1, `rgba(255,252,245,0)`);
+        ctx.strokeStyle = lg;
+        ctx.lineWidth = rand(0.4, 1.2);
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(len, 0);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // Subtle dust clouds
+      for (let i = 0; i < 8; i++) {
+        const dx = rand(0, W), dy = rand(0, H);
+        const dr = rand(40, 160);
+        const dg = ctx.createRadialGradient(dx, dy, 0, dx, dy, dr);
+        const op = rand(0.01, 0.07);
+        dg.addColorStop(0, `rgba(200,190,175,${op})`);
+        dg.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = dg;
+        ctx.beginPath();
+        ctx.arc(dx, dy, dr, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+  </script>
+</body>
+</html>
